@@ -42,7 +42,7 @@ Autoscale = $Autoscale
 
         [[[volume boot]]]
         Size = ${ifThenElse(BootDiskSize > 0, BootDiskSize, undefined)}
-        SSD = True
+        StorageAccountType = $BootDiskStorageSKU
 
         [[[configuration cyclecloud.mounts.nfs_shared]]]
         type = nfs
@@ -85,13 +85,13 @@ Autoscale = $Autoscale
 
         [[[volume sched]]]
         Size = 1024
-        SSD = True
+        StorageAccountType = $SchedDiskStorageSKU
         Mount = builtinsched
         Persistent = False
 
         [[[volume shared]]]
         Size = ${ifThenElse(NFSType == "Builtin", FilesystemSize, 2)}
-        SSD = True
+        StorageAccountType = $SharedDiskStorageSKU
         Mount = builtinshared
         Persistent = ${NFSType == "Builtin"}
 
@@ -361,6 +361,26 @@ Order = 20
         Config.Increment = 64
         DefaultValue = 0
 
+        [[[parameter BootDiskStorageSKU]]]
+        ParameterType = StringList
+        Config.Label = OS Disk storage SKU
+        Config.Plugin = pico.form.Dropdown
+        Config.Entries := {[Label="Premium SSD"; Value="Premium_LRS"], [Label="Standard SSD"; Value="StandardSSD_LRS"], [Label="Standard HDD"; Value="Standard_LRS"]}
+        DefaultValue = Premium_LRS
+
+        [[[parameter SchedDiskStorageSKU]]]
+        ParameterType = StringList
+        Config.Label = /sched Disk storage SKU
+        Config.Plugin = pico.form.Dropdown
+        Config.Entries := {[Label="Premium SSD"; Value="Premium_LRS"], [Label="Standard SSD"; Value="StandardSSD_LRS"], [Label="Standard HDD"; Value="Standard_LRS"]}
+        DefaultValue = Premium_LRS
+
+        [[[parameter SharedDiskStorageSKU]]]
+        ParameterType = StringList
+        Config.Label = /shared Disk storage SKU
+        Config.Plugin = pico.form.Dropdown
+        Config.Entries := {[Label="Premium SSD"; Value="Premium_LRS"], [Label="Standard SSD"; Value="StandardSSD_LRS"], [Label="Standard HDD"; Value="Standard_LRS"]}
+        DefaultValue = Premium_LRS
 
 
     [[parameters Software]]
