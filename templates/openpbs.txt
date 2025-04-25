@@ -84,7 +84,7 @@ Autoscale = $Autoscale
         AssociatePublicIpAddress = $UsePublicNetwork
 
         [[[volume sched]]]
-        Size = 1024
+        Size = $SchedFilesystemSize
         StorageAccountType = $SchedDiskStorageSKU
         Mount = builtinsched
         Persistent = False
@@ -295,6 +295,16 @@ Order = 15
         Config.MaxValue = 10240
         Config.IntegerOnly = true
         Conditions.Excluded := NFSType != "Builtin"
+
+        [[[parameter SchedFilesystemSize]]]
+        Label = Size (GB)
+        Description = The /sched filesystem size (cannot be changed after initial start)
+        DefaultValue = 1000
+
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 10
+        Config.MaxValue = 10240
+        Config.IntegerOnly = true
 
     [[parameters Additional NFS Mount]]
     Order = 20
