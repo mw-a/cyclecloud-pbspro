@@ -24,6 +24,11 @@ Autoscale = $Autoscale
 
         [[[configuration]]]
         pbspro.version = $PBSVersion
+
+        # Disable ip-XXXXXXXX hostname generation
+        cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
+        cyclecloud.hosts.simple_vpc_dns.enabled = ${NodeNameIsHostname==false}
+
         # For fast spin-up after Deallocate, force an immediate re-converge on boot
         cyclecloud.converge_on_boot = true
 
@@ -39,7 +44,7 @@ Autoscale = $Autoscale
 
         # May be used to identify the ID in cluster-init scripts
         cluster.identities.default = $ManagedIdentity
-	
+
         [[[cluster-init cyclecloud/pbspro:default]]]
         Optional = false
 
@@ -76,6 +81,7 @@ Autoscale = $Autoscale
     MachineType = $serverMachineType
     IsReturnProxy = $ReturnProxy
     AdditionalClusterInitSpecs = $serverClusterInitSpecs
+    ComputerName = ${toLower(regexps("([^a-zA-Z0-9-])", ifThenElse(ServerHostName=="Cluster Prefix", StrJoin("-", ClusterName, "server"), ifThenElse(Size(Trim(ServerHostName)) == 0 || ServerHostName == "Generated", undefined, ServerHostName)), "-"))}
     
         [[[configuration]]]
         # Disable NFS mount of built-in /sched since it is a local volume mount: cyclecloud.mounts.builtinsched
@@ -132,6 +138,7 @@ Autoscale = $Autoscale
     [[nodearray login]]
     InitialCount = $NumberLoginNodes
     MachineType = $serverMachineType
+    ComputerNamePrefix = ${toLower(regexps("([^a-zA-Z0-9-])", ifThenElse(NodeNamePrefix=="Cluster Prefix", strcat(ClusterName, "-"), ifThenElse(Size(Trim(NodeNamePrefix)) != 0, strcat(NodeNamePrefix, "-"), undefined)), "-"))}
         
 	[[[cluster-init cyclecloud/pbspro:login]]]
 	
@@ -146,6 +153,7 @@ Autoscale = $Autoscale
     AdditionalClusterInitSpecs = $ExecuteClusterInitSpecs
     EnableNodeHealthChecks = $EnableNodeHealthChecks
 
+    ComputerNamePrefix = ${toLower(regexps("([^a-zA-Z0-9-])", ifThenElse(NodeNamePrefix=="Cluster Prefix", strcat(ClusterName, "-"), ifThenElse(Size(Trim(NodeNamePrefix)) != 0, strcat(NodeNamePrefix, "-"), undefined)), "-"))}
 
         [[[configuration]]]
         # setting this completely disables the autoscaler from adding nodes to the cluster
@@ -153,7 +161,7 @@ Autoscale = $Autoscale
         # {"pbspro": {"ignore_queues": ["workq", "htcq"]}}
         # which is what pbspro.queues.workq.ignore does as well.
         # autoscale.enabled = $Autoscale
-        
+
         [[[cluster-init cyclecloud/pbspro:execute]]]
 
         [[[network-interface eth0]]]
@@ -471,6 +479,32 @@ Order = 20
     Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your locker."
     Order = 10
 
+
+        [[[parameter NodeNameIsHostname]]]
+        Label = Name As Hostname
+        Description = Should the hostname match the nodename for execute nodes?
+        ParameterType = Boolean
+        DefaultValue = true
+
+        [[[parameter NodeNamePrefix]]]
+        Label = Node Prefix
+        Description = Prefix for generated node names, i.e. "prefix-" generates prefix-nodearray-1. Use 'Cluster Prefix' to get $ClusterName-nodearray-1
+        ParameterType = StringList
+        Config.Plugin = pico.form.Dropdown
+        Config.FreeForm = true
+        DefaultValue = "Cluster Prefix"
+        Config.Entries := {[Value=""], [Value="Cluster Prefix"]}
+        Conditions.Hidden := NodeNameIsHostname != true
+
+        [[[parameter ServerHostName]]]
+        Label = Scheduler Hostname
+        Description = Hostname of server. 'Generated' uses the default generated hostname. 'Cluster Prefix' will generate $ClusterName-server.
+        ParameterType = StringList
+        Config.Plugin = pico.form.Dropdown
+        Config.FreeForm = true
+        DefaultValue = "Cluster Prefix"
+        Config.Entries := {[Value="Generated"], [Value="Cluster Prefix"]}
+        Conditions.Hidden := NodeNameIsHostname != true
 
         [[[parameter SchedulerImageName]]]
         Label = Scheduler OS
