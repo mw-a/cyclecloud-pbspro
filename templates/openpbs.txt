@@ -24,6 +24,8 @@ Autoscale = $Autoscale
 
         [[[configuration]]]
         pbspro.version = $PBSVersion
+        pbspro.node_prefix = ${ifThenElse(NodeNamePrefix=="Cluster Prefix", StrJoin("-", ClusterName, ""), NodeNamePrefix)}
+        pbspro.use_nodename_as_hostname = $NodeNameIsHostname
 
         # Disable ip-XXXXXXXX hostname generation
         cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
@@ -138,7 +140,6 @@ Autoscale = $Autoscale
     [[nodearray login]]
     InitialCount = $NumberLoginNodes
     MachineType = $serverMachineType
-    ComputerNamePrefix = ${toLower(regexps("([^a-zA-Z0-9-])", ifThenElse(NodeNamePrefix=="Cluster Prefix", strcat(ClusterName, "-"), ifThenElse(Size(Trim(NodeNamePrefix)) != 0, strcat(NodeNamePrefix, "-"), undefined)), "-"))}
         
 	[[[cluster-init cyclecloud/pbspro:login]]]
 	
@@ -153,7 +154,6 @@ Autoscale = $Autoscale
     AdditionalClusterInitSpecs = $ExecuteClusterInitSpecs
     EnableNodeHealthChecks = $EnableNodeHealthChecks
 
-    ComputerNamePrefix = ${toLower(regexps("([^a-zA-Z0-9-])", ifThenElse(NodeNamePrefix=="Cluster Prefix", strcat(ClusterName, "-"), ifThenElse(Size(Trim(NodeNamePrefix)) != 0, strcat(NodeNamePrefix, "-"), undefined)), "-"))}
 
         [[[configuration]]]
         # setting this completely disables the autoscaler from adding nodes to the cluster
