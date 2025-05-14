@@ -5,7 +5,7 @@ if [ ! $(find . -path ./venv/created -mtime -7) ]; then
     rm -rf venv
     python3 -m venv venv
     source venv/bin/activate
-    pip install setuptools
+    pip install -U setuptools pip
     touch venv/created
 else
     source venv/bin/activate
