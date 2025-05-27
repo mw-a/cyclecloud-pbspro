@@ -26,6 +26,7 @@ Autoscale = $Autoscale
         pbspro.version = $PBSVersion
         pbspro.node_prefix = ${ifThenElse(NodeNamePrefix=="Cluster Prefix", StrJoin("-", ClusterName, ""), NodeNamePrefix)}
         pbspro.use_nodename_as_hostname = $NodeNameIsHostname
+        pbspro.autoscale_idle_timeout = $AutoscaleKeepAlive
 
         # Disable ip-XXXXXXXX hostname generation
         cyclecloud.hosts.standalone_dns.enabled = ${NodeNameIsHostname==false}
@@ -236,6 +237,14 @@ Order = 10
         DefaultValue = true
         Widget.Plugin = pico.form.BooleanCheckBox
         Widget.Label = Start instances automatically. Shutdown is determined by Keep Alive.
+
+        [[[parameter AutoscaleKeepAlive]]]
+        Label = Autoscale Keep Alive
+        DefaultValue = 300
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 10
+        Config.MaxValue = 10240
+        Config.IntegerOnly = true
 
         [[[parameter AzpbsCronMethod]]]
         Label = Cron Method
